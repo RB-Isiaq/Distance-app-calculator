@@ -12,8 +12,8 @@ const DistanceApp = () => {
   const [distance, setDistance] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-  const HERE_API_KEY = process.env.HERE_API_KEY;
+  const GOOGLE_API_KEY = import.meta.env.GOOGLE_API_KEY;
+  const HERE_API_KEY = import.meta.env.HERE_API_KEY;
 
   const selectHandler = (e) => {
     const distanceType = e.target.value;
@@ -35,7 +35,7 @@ const DistanceApp = () => {
         const resA = await axios.get(
           `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
             addressPointA
-          )}&apiKey=${HERE_API_KEY}`
+          )}&apiKey=_Y3ScSeeaJlOuVp9SR1O-KCRHoNM7d1-dgDfgENeGww`
         );
         console.log(resA);
         const { items: itemsA } = resA.data;
@@ -44,7 +44,7 @@ const DistanceApp = () => {
         const resB = await axios.get(
           `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
             addressPointB
-          )}&apiKey=${HERE_API_KEY}`
+          )}&apiKey=_Y3ScSeeaJlOuVp9SR1O-KCRHoNM7d1-dgDfgENeGww`
         );
         console.log(resB);
         const { items: itemsB } = resB.data;
@@ -163,7 +163,9 @@ const DistanceApp = () => {
       ) : (
         <div className="flex flex-col items-center gap-4 w-[100%] md:w-2/3">
           <p>{distance}</p>
-          <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
+          <LoadScript
+            googleMapsApiKey={"AIzaSyBDrowAt8Gk78lw08m7bUZlsaIzwvsLahI"}
+          >
             <GoogleMap>
               <Marker
                 position={{
