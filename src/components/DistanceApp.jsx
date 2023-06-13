@@ -12,7 +12,7 @@ const DistanceApp = () => {
   const [distance, setDistance] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const GOOGLR_API_KEY = process.env.GOOGLR_API_KEY;
+  const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
   const HERE_API_KEY = process.env.HERE_API_KEY;
 
   const selectHandler = (e) => {
@@ -163,7 +163,7 @@ const DistanceApp = () => {
       ) : (
         <div className="flex flex-col items-center gap-4 w-[100%] md:w-2/3">
           <p>{distance}</p>
-          <LoadScript googleMapsApiKey={GOOGLR_API_KEY}>
+          <LoadScript googleMapsApiKey={GOOGLE_API_KEY}>
             <GoogleMap>
               <Marker
                 position={{
