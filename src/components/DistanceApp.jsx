@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axios from "axios";
-import { GoogleMap, Marker, LoadScript } from "@react-google-maps/api";
+import Map from "./Map";
 
 const DistanceApp = () => {
+  // Declaring state variables
   const [address, setAddress] = useState(false);
   const [latLng, setLatLng] = useState(true);
   const [latlngPointA, setLatlngPointA] = useState("");
@@ -10,59 +11,92 @@ const DistanceApp = () => {
   const [addressPointA, setAddressPointA] = useState("");
   const [addressPointB, setAddressPointB] = useState("");
   const [distance, setDistance] = useState("");
+  const [mapCenter, setMapCenter] = useState(null);
+  const [markerPosition, setMarkerPosition] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const GOOGLE_API_KEY = import.meta.env.GOOGLE_API_KEY;
+  // API KEY
   const HERE_API_KEY = import.meta.env.HERE_API_KEY;
 
   const selectHandler = (e) => {
     const distanceType = e.target.value;
 
     if (distanceType === "address") {
-      setAddress(true);
-      setLatLng(false);
+      setAddress(!address);
+      setLatLng(!latLng);
     }
     if (distanceType === "latlng") {
-      setLatLng(true);
-      setAddress(false);
+      setLatLng(!latLng);
+      setAddress(!address);
+      // setLatLng(true);
+      // setAddress(false);
     }
   };
   const distanceCalculator = async (event) => {
     event.preventDefault();
     setLoading(true);
+    let latA, lngA, latB, lngB;
     if (address) {
       try {
         const resA = await axios.get(
           `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
             addressPointA
-          )}&apiKey=_Y3ScSeeaJlOuVp9SR1O-KCRHoNM7d1-dgDfgENeGww`
+          )}&apiKey=${HERE_API_KEY}`
         );
-        console.log(resA);
         const { items: itemsA } = resA.data;
-        const { lat: latA, lng: lngA } = itemsA[0].position;
-        setLatlngPointA(`${latA},${lngA}`);
+        const { lat, lng } = itemsA[0].position;
+        latA = lat;
+        lngA = lng;
+        // setLatlngPointA(`${latA},${lngA}`);
         const resB = await axios.get(
           `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
             addressPointB
-          )}&apiKey=_Y3ScSeeaJlOuVp9SR1O-KCRHoNM7d1-dgDfgENeGww`
+          )}&apiKey=${HERE_API_KEY}`
         );
-        console.log(resB);
         const { items: itemsB } = resB.data;
-        const { lat: latB, lng: lngB } = itemsB[0].position;
-        setLatlngPointB(`${latB},${lngB}`);
+        const { lat: lat2, lng: lng2 } = itemsB[0].position;
+        latB = lat2;
+        lngB = lng2;
+        // setLatlngPointB(`${latB},${lngB}`);
       } catch (error) {
         alert(`Address geocoding error ${error}`);
       }
     }
 
-    const [latA, lngA] = latlngPointA.split(",");
-    const [latB, lngB] = latlngPointB.split(",");
+    // Calculating the distance using the harversine formula
+    if (latLng) {
+      [latA, lngA] = latlngPointA.split(",");
+      [latB, lngB] = latlngPointB.split(",");
+    }
+    // Set map center to point A
+    setMapCenter({
+      lat: parseFloat(latA),
+      lng: parseFloat(lngA),
+    });
 
-    const radlatA = (Math.PI * latA) / 180;
-    const radlngA = (Math.PI * lngA) / 180;
-    const radlatB = (Math.PI * latB) / 180;
-    const radlngB = (Math.PI * lngB) / 180;
+    // Set marker position to point B
+    setMarkerPosition([parseFloat(latB), parseFloat(lngB)]);
 
+    const toRadians = (degrees) => {
+      return degrees * (Math.PI / 180);
+    };
+    const deltaLat = toRadians(latB - latA);
+    const deltaLng = toRadians(lngB - lngA);
+
+    const radlatA = toRadians(latA);
+    const radlatB = toRadians(latB);
+
+    const a =
+      Math.sin(deltaLat / 2) ** 2 +
+      Math.cos(radlatA) * Math.cos(radlatB) * Math.sin(deltaLng / 2) ** 2;
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const earthRadius = 6371; // in kilometers
+
+    const distance = earthRadius * c;
+    // This here also works and provide the same ans
     const theta = lngA - lngB;
     const radtheta = (Math.PI * theta) / 180;
     let dist =
@@ -73,18 +107,14 @@ const DistanceApp = () => {
     dist = (dist * 180) / Math.PI;
     dist = dist * 60 * 1.1515;
     dist = dist * 1.609344; // Convert to kilometers
-
-    if (!dist) {
-      setDistance(
-        "Please input a correct format for the latitude and longitude e.g. 53.35,23.35"
-      );
+    if (!distance) {
+      setError(true);
       setLoading(false);
       return;
     }
-    setDistance(
-      `The distance between point A and point B is ${dist.toFixed(2)}km`
-    );
+    setDistance(`Distance: ${distance.toFixed(2)}km`);
     setLoading(false);
+    setError(false);
   };
   return (
     <div className="flex flex-col justify-evenly items-center gap-10 md:flex-row lg:p-10">
@@ -96,7 +126,7 @@ const DistanceApp = () => {
         <select
           id="distance"
           onChange={selectHandler}
-          className="py-2 px-4 rounded-xl border-none outline-none"
+          className="bg-white py-2 px-4 rounded-xl border-none outline-none"
         >
           <option value="latlng">Latitude and Longitude</option>
           <option value="address">Address</option>
@@ -104,7 +134,7 @@ const DistanceApp = () => {
 
         {latLng && (
           <>
-            <label htmlFor="from">From Point A</label>
+            <label htmlFor="from">From point A</label>
             <input
               id="from"
               type="text"
@@ -114,7 +144,7 @@ const DistanceApp = () => {
               required
               className="py-2 px-4 rounded-xl border-none outline-none"
             />
-            <label htmlFor="to">To Point B</label>
+            <label htmlFor="to">To point B</label>
             <input
               id="to"
               type="text"
@@ -128,7 +158,7 @@ const DistanceApp = () => {
         )}
         {address && (
           <>
-            <label htmlFor="from">From Point A</label>
+            <label htmlFor="from">From point A</label>
             <input
               id="from"
               type="text"
@@ -138,7 +168,7 @@ const DistanceApp = () => {
               required
               className="py-2 px-4 rounded-xl border-none outline-none"
             />
-            <label htmlFor="to">To Point B</label>
+            <label htmlFor="to">To point B</label>
             <input
               id="to"
               type="text"
@@ -161,26 +191,24 @@ const DistanceApp = () => {
       {loading ? (
         <img src="/loader.svg" alt="" />
       ) : (
-        <div className="flex flex-col items-center gap-4 w-[100%] md:w-2/3">
-          <p>{distance}</p>
-          <LoadScript
-            googleMapsApiKey={"AIzaSyBDrowAt8Gk78lw08m7bUZlsaIzwvsLahI"}
-          >
-            <GoogleMap>
-              <Marker
-                position={{
-                  lat: +latlngPointA.split(",")[0],
-                  lng: +latlngPointA.split(",")[1],
-                }}
-              />
-              <Marker
-                position={{
-                  lat: +latlngPointB.split(",")[0],
-                  lng: +latlngPointB.split(",")[1],
-                }}
-              />
-            </GoogleMap>
-          </LoadScript>
+        <div className="flex flex-col justify-center items-center gap-4 w-[100%] md:w-2/3">
+          {error ? (
+            <p className="text-red-500 text-center">
+              Please input a correct format for the latitude and longitude e.g.
+              53.35,23.35
+            </p>
+          ) : (
+            distance && (
+              <p className="text-center text-[17px]">
+                The distance between point A and point B is <br />
+                {distance}
+              </p>
+            )
+          )}
+
+          {!error && mapCenter && markerPosition && (
+            <Map center={mapCenter} markerPosition={markerPosition} />
+          )}
         </div>
       )}
     </div>

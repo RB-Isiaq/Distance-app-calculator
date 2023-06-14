@@ -1,29 +1,67 @@
-# Edustipend Frontend Tasks
+# Distance App Calculator
 
-A Frontend Engineer pre work tasks created with reactJs and styled with tailwindCss.
+This app calculates the distance between two points using the haversine formula
 
-<img width="1200" alt="ui" src="https://github-production-user-asset-6210df.s3.amazonaws.com/99425435/239027252-8c32dbd9-6ed0-4c6d-9915-aa0d3fff30bc.png">
+```js
+a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlong/2)
+c = 2 * atan2(√a, √(1-a))
+d = R * c
+```
 
-## Task 1
+Where:
 
-The core components that make up the user interface above are:
+- lat1 and lat2 are the latitudes of the two points,
+- long1 and long2 are the longitudes of the two points,
+- Δlat = lat2 - lat1,
+- Δlong = long2 - long1,
+- R is the radius of the Earth (mean radius = 6,371 km).
+- The link to the code
 
-1. NavBar: an essential component of the UI that provides easy navigation and functionalities for a user.
-2. Hero: an integral part of the app, showcasing the primary contents of the application and other essential components in the UI.
-3. Button: a reusable component within the app; one of the main feature of a component is its reusability.
-4. App: The main component that renders other components of the UI.
+In React Code snippet we can have for example:
 
-## Task 2
+```js
+import React from "react";
 
-The react code for two of the components above:
+const DistanceCalculator = () => {
+  const calculateDistance = () => {
+    const lat1 = 54;
+    const long1 = 50;
+    const lat2 = 55;
+    const long2 = 60;
 
-#### [Hero](https://github.com/RB-Isiaq/edustipend/blob/main/src/components/Hero.jsx)
+    const toRadians = (degrees) => {
+      return degrees * (Math.PI / 180);
+    };
 
-#### [NavBar](https://github.com/RB-Isiaq/edustipend/blob/main/src/components/NavBar.jsx)
+    const deltaLat = toRadians(lat2 - lat1);
+    const deltaLong = toRadians(long2 - long1);
 
-## Task 3
+    const lat1Rad = toRadians(lat1);
+    const lat2Rad = toRadians(lat2);
 
-The link to the code
+    const a =
+      Math.sin(deltaLat / 2) ** 2 +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(deltaLong / 2) ** 2;
 
-- #### [GitHub](https://github.com/RB-Isiaq/edustipend)
-- #### [Live Link](https://edustipend.vercel.app)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const earthRadius = 6371; // in kilometers
+    const distance = earthRadius * c;
+
+    return distance;
+  };
+
+  return (
+    <div>
+      <h1>Distance Calculator</h1>
+      <button onClick={() => console.log(calculateDistance())}>
+        Calculate Distance
+      </button>
+    </div>
+  );
+};
+
+export default DistanceCalculator;
+```
+
+- #### [Live Link](https://distance-app-calculator.vercel.app)
