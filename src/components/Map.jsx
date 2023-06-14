@@ -61,7 +61,7 @@ const Map = ({ center, markerPosition, distance }) => {
       tooltipRef.current = L.tooltip({
         permanent: true,
         direction: "center",
-        className: "custom-tooltip",
+        className: "custom-tooltip bg-transparent mt-2",
       }).setContent(distance);
 
       polylineRef.current.bindTooltip(tooltipRef.current).openTooltip();
