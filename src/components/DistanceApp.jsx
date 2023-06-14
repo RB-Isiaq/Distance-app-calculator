@@ -205,7 +205,11 @@ const DistanceApp = () => {
           )}
 
           {!error && mapCenter && markerPosition && (
-            <Map center={mapCenter} markerPosition={markerPosition} />
+            <Map
+              center={mapCenter}
+              markerPosition={markerPosition}
+              distance={distance}
+            />
           )}
         </div>
       )}
