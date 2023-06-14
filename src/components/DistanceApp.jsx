@@ -17,7 +17,7 @@ const DistanceApp = () => {
   const [error, setError] = useState(false);
 
   // API KEY
-  const HERE_API_KEY = import.meta.env.HERE_API_KEY;
+  const HERE_API_KEY = import.meta.env.VITE_HERE_API_KEY;
 
   const selectHandler = (e) => {
     const distanceType = e.target.value;
@@ -29,8 +29,6 @@ const DistanceApp = () => {
     if (distanceType === "latlng") {
       setLatLng(!latLng);
       setAddress(!address);
-      // setLatLng(true);
-      // setAddress(false);
     }
   };
   const distanceCalculator = async (event) => {
