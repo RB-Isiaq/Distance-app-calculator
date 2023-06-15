@@ -10,6 +10,8 @@ const DistanceApp = () => {
   const [latlngPointB, setLatlngPointB] = useState("");
   const [addressPointA, setAddressPointA] = useState("");
   const [addressPointB, setAddressPointB] = useState("");
+  const [addressPointACoords, setAddressPointACoords] = useState("");
+  const [addressPointBCoords, setAddressPointBCoords] = useState("");
   const [distance, setDistance] = useState("");
   const [mapCenter, setMapCenter] = useState(null);
   const [markerPosition, setMarkerPosition] = useState(null);
@@ -25,10 +27,12 @@ const DistanceApp = () => {
     if (distanceType === "address") {
       setAddress(!address);
       setLatLng(!latLng);
+      setDistance("");
     }
     if (distanceType === "latlng") {
       setLatLng(!latLng);
       setAddress(!address);
+      setDistance("");
     }
   };
   const distanceCalculator = async (event) => {
@@ -46,7 +50,7 @@ const DistanceApp = () => {
         const { lat, lng } = itemsA[0].position;
         latA = lat;
         lngA = lng;
-        // setLatlngPointA(`${latA},${lngA}`);
+        setAddressPointACoords(`Point A coords: ${latA}, ${lngA}`);
         const resB = await axios.get(
           `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(
             addressPointB
@@ -56,7 +60,7 @@ const DistanceApp = () => {
         const { lat: lat2, lng: lng2 } = itemsB[0].position;
         latB = lat2;
         lngB = lng2;
-        // setLatlngPointB(`${latB},${lngB}`);
+        setAddressPointBCoords(`Point B coords: ${latB}, ${lngB}`);
       } catch (error) {
         alert(`Address geocoding error ${error}`);
       }
@@ -189,19 +193,27 @@ const DistanceApp = () => {
       {loading ? (
         <img src="/loader.svg" alt="" />
       ) : (
-        <div className="flex flex-col justify-center items-center gap-4 w-[100%] md:w-2/3">
+        <div className="flex flex-col gap-4 w-[100%] md:w-2/3">
           {error ? (
             <p className="text-red-500 text-center">
               Please input a correct format for the latitude and longitude e.g.
               53.35,23.35
             </p>
           ) : (
-            distance && (
-              <p className="text-center text-[17px]">
-                The distance between point A and point B is <br />
-                {distance}
-              </p>
-            )
+            <div>
+              {address && distance && (
+                <>
+                  <p>{addressPointACoords}</p>
+                  <p>{addressPointBCoords}</p>
+                </>
+              )}
+              {distance && (
+                <p>
+                  The distance between points A and B is <br />
+                  {distance}
+                </p>
+              )}
+            </div>
           )}
 
           {!error && mapCenter && markerPosition && (
